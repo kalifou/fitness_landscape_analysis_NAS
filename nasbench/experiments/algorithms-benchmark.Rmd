@@ -1,0 +1,53 @@
+---
+title: "Transference"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/git/nasbench/experiments")
+
+library(ggplot2)
+library(pastecs)
+library(reshape2)
+library(GA)
+library(lhs)
+library(jsonlite)
+library(truncnorm)
+library(fitdistrplus)
+```
+
+## Optimization on NAS Benchmark
+
+```{r}
+# Load data
+hof.ga <- read.csv("ga-30runs.hof.csv", header=FALSE, sep="\t")
+names(hof.ga) <- c("Solution", "Accuracy")
+hof.ga$Algorithm <- "GA"
+
+hof.rs <- read.csv("rs-30runs.hof.csv", header=FALSE, sep="\t")
+names(hof.rs) <- c("Solution", "Accuracy")
+hof.rs$Algorithm <- "RS"
+
+df <- rbind(hof.ga, hof.rs)
+```
+
+```{r}
+stat.desc(hof.ga$Accuracy, basic=FALSE)
+
+stat.desc(hof.rs$Accuracy, basic=FALSE)
+
+wilcox.test(hof.ga$Accuracy, hof.rs$Accuracy)
+```
+
+```{r, echo=FALSE}
+pl <- ggplot(df, aes(x=Algorithm, y=Accuracy)) + geom_boxplot()
+pl
+
+
+# density
+pl <- ggplot(df, aes(x=Accuracy, group=Algorithm, fill=Algorithm)) + geom_density(alpha=0.5)
+pl
+```
